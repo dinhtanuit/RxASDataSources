@@ -8,7 +8,7 @@ Pod::Spec.new do |s|
      s.authors = { "Dang Thai Son" => "dangthaison.91@gmail.com" }
      s.source = { :git => "https://github.com/RxSwiftCommunity/RxASDataSources.git", :tag => s.version.to_s }
 
-     s.ios.deployment_target = '9.0'
+     s.ios.deployment_target = '13.0'
      s.requires_arc = true
      s.swift_versions = '5.0'
 
@@ -17,7 +17,7 @@ Pod::Spec.new do |s|
 
      s.dependency 'RxSwift', '~> 6.9'
      s.dependency 'RxCocoa', '~> 6.9'
-     s.dependency 'Differentiator', '~> 4.0'
+     s.dependency 'Differentiator', '~> 5.0'
      s.dependency 'Texture'
 
 end
