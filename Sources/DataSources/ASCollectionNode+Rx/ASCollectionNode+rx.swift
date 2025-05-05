@@ -11,21 +11,25 @@ import RxSwift
 import RxCocoa
 
 public extension Reactive where Base: ASCollectionNode {
-    func items<DataSource: RxASCollectionDataSourceType & ASCollectionDataSource, O: ObservableType>(dataSource: DataSource)
-        -> (_ source: O)
-        -> Disposable where DataSource.Element == O.E {
+    func items<DataSource: RxASCollectionDataSourceType & ASCollectionDataSource, O: ObservableType>(
+        dataSource: DataSource
+    ) -> (_ source: O) -> Disposable where DataSource.Element == O.Element {
 
-            return { source in
+        return { source in
+            let subscription = source
+                .subscribeProxyDataSource(
+                    ofObject: self.base as ASCollectionNode, // ép kiểu rõ ràng nếu cần
+                    dataSource: dataSource,
+                    retainDataSource: true
+                ) { [weak collectionNode = self.base as? ASCollectionNode] (_: RxASCollectionDataSourceProxy, event: Event<O.Element>) -> Void in
+                    guard let collectionNode = collectionNode else { return }
+                    dataSource.collectionNode(collectionNode, observedEvent: event)
+                }
 
-                let subscription = source
-                    .subscribeProxyDataSource(ofObject: self.base, dataSource: dataSource, retainDataSource: true) { [weak collectionNode = self.base] (_: RxASCollectionDataSourceProxy, event) -> Void in
-                        guard let collectionNode = collectionNode else { return }
-                        dataSource.collectionNode(collectionNode, observedEvent: event)
-                }
-                return Disposables.create {
-                    subscription.dispose()
-                }
+            return Disposables.create {
+                subscription.dispose()
             }
+        }
     }
 }
 

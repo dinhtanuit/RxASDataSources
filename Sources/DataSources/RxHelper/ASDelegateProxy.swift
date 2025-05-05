@@ -12,7 +12,7 @@ import RxSwift
 import RxCocoa
 
 extension ObservableType {
-    func subscribeProxyDataSource<DelegateProxy: DelegateProxyType>(ofObject object: DelegateProxy.ParentObject, dataSource: DelegateProxy.Delegate, retainDataSource: Bool, binding: @escaping (DelegateProxy, Event<E>) -> Void)
+    func subscribeProxyDataSource<DelegateProxy: DelegateProxyType>(ofObject object: DelegateProxy.ParentObject, dataSource: DelegateProxy.Delegate, retainDataSource: Bool, binding: @escaping (DelegateProxy, Event<Element>) -> Void)
         -> Disposable
         where DelegateProxy.ParentObject: ASDisplayNode {
 
@@ -28,15 +28,15 @@ extension ObservableType {
             object.layoutIfNeeded()
 
             let subscription = self.asObservable()
-                .observeOn(MainScheduler())
-                .catchError { error in
+                .observe(on: MainScheduler())
+                .catch { error in
                     bindingErrorToInterface(error)
                     return Observable.empty()
                 }
                 // source can never end, otherwise it would release the subscriber, and deallocate the data source
                 .concat(Observable.never())
-                .takeUntil(object.rx.deallocated)
-                .subscribe { [weak object] (event: RxSwift.Event<E>) in
+                .take(until: object.rx.deallocated)
+                .subscribe { [weak object] (event: RxSwift.Event<Element>) in
                     
                     if object != nil {
                         // TODO: Enable assert again to prevent Proxy changed

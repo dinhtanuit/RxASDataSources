@@ -12,22 +12,27 @@ import RxSwift
 import RxCocoa
 
 public extension Reactive where Base: ASTableNode {
-    func items<DataSource: RxASTableDataSourceType & ASTableDataSource, O: ObservableType>(dataSource: DataSource)
-        -> (_ source: O)
-        -> Disposable where DataSource.Element == O.E {
+    func items<DataSource: RxASTableDataSourceType & ASTableDataSource, O: ObservableType>(
+        dataSource: DataSource
+    ) -> (_ source: O) -> Disposable where DataSource.Element == O.Element {
 
-            return { source in
-
-                let subscription = source
-                    .subscribeProxyDataSource(ofObject: self.base, dataSource: dataSource, retainDataSource: true) { [weak tableNode = self.base] (_: RxASTableDataSourceProxy, event) -> Void in
+        return { source in
+            let subscription = source
+                .subscribeProxyDataSource(
+                    ofObject: self.base,
+                    dataSource: dataSource,
+                    retainDataSource: true
+                ) { [weak tableNode = self.base] (_: RxASTableDataSourceProxy, event: Event<O.Element>) -> Void in
                     guard let tableNode = tableNode else { return }
                     dataSource.tableNode(tableNode, observedEvent: event)
                 }
-                return Disposables.create {
-                    subscription.dispose()
-                }
+
+            return Disposables.create {
+                subscription.dispose()
             }
+        }
     }
+
 }
 
 extension Reactive where Base: ASTableNode {
